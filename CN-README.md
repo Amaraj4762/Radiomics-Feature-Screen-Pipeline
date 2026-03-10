@@ -4,6 +4,7 @@
 
 该流程专为结构化放射组学数据设计，尤其适用于医学影像研究场景。在这类研究中，手工提取的高维特征数量通常远大于样本量，因此有必要进行系统性的特征筛选，以提高模型的稳定性和可解释性。
 
+[English Instruction Pls Click Here](https://github.com/Edward-E-S-Wang/Radiomics-Feature-Screen-Pipeline/blob/main/README.md)
 ---
 
 ## 概述
