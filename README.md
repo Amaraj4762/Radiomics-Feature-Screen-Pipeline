@@ -3,6 +3,7 @@ A complete radiomics feature selection pipeline for binary classification tasks,
 
 This pipeline is designed for structured radiomics datasets and is especially suitable for studies in medical imaging, where the number of handcrafted features is usually much larger than the sample size.
 
+[中文说明请点击这里](https://github.com/Edward-E-S-Wang/Radiomics-Feature-Screen-Pipeline/blob/main/CN-README.md)
 ---
 
 ## Overview
